@@ -36,8 +36,7 @@ namespace WeChat.NET
         private WXUser _me;
 
         private List<Object> _contact_all = new List<object>();
-        private List<object> _contact_latest = new List<object>();
-
+        private List<object> _contact_latest = new List<object>(); 
         /// <summary>
         /// 构造方法
         /// </summary>
@@ -242,10 +241,40 @@ namespace WeChat.NET
                                     string to = m["ToUserName"].ToString();
                                     string content = m["Content"].ToString();
                                     string type = m["MsgType"].ToString();
-
                                     WXMsg msg = new WXMsg();
                                     msg.From = from;
                                     msg.Msg = type == "1" ? content : "请在其他设备上查看消息";  //只接受文本消息
+                                    if(type=="49")
+                                    {
+                                        this.BeginInvoke((Action)delegate()
+                                            {
+                                                var username = string.Empty;
+                                                var userEname = string.Empty;
+                                                foreach (Object u in wChatList1.Items)
+                                                {
+                                                    var user = u as WXUser;
+                                                    if (user != null && user.UserName == from && to == _me.UserName)  //接收别人消息
+                                                    {
+                                                        userEname = user.PYQuanPin;
+                                                        username = user.NickName;
+                                                    }
+                                                }
+                                                if (string.IsNullOrWhiteSpace(username))
+                                                {
+                                                    foreach (object o in wFriendsList1.Items)
+                                                    {
+                                                        WXUser friend = o as WXUser;
+                                                        if (friend != null && friend.UserName == from && to == _me.UserName)  //接收别人消息
+                                                        {
+                                                            userEname = friend.PYQuanPin;
+                                                            username = friend.NickName;
+                                                        }
+                                                    }
+                                                }
+                                                new DBService.MongoHelper().AddTopic(DateTime.Now, content, userEname, username);
+                                            });
+                                    }
+                                    
                                     msg.Readed = false;
                                     msg.Time = DateTime.Now;
                                     msg.To = to;
@@ -306,7 +335,7 @@ namespace WeChat.NET
                             }
                         }
                     }
-                    System.Threading.Thread.Sleep(10);
+                    System.Threading.Thread.Sleep(1000);
                 }
 
             })).BeginInvoke(null, null);

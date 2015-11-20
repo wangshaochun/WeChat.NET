@@ -223,7 +223,8 @@ namespace WeChat.NET.Objects
         /// <param name="msg"></param>
         public void ReceiveMsg(WXMsg msg)
         {
-            _recvedMsg.Add(msg.Time, msg);
+            if (!_recvedMsg.Keys.Contains(msg.Time))
+                _recvedMsg.Add(msg.Time, msg);
             if (MsgRecved != null)
             {
                 MsgRecved(msg);
