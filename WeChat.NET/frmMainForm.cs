@@ -139,8 +139,11 @@ namespace WeChat.NET
             ((Action)(delegate()
             {
                 WXService wxs = new WXService();
+
+                #region MyRegion
+
                 JObject init_result = wxs.WxInit();  //初始化
-                
+
                 List<object> contact_all = new List<object>();
                 if (init_result != null)
                 {
@@ -190,7 +193,7 @@ namespace WeChat.NET
                         user.RemarkPYQuanPin = contact["RemarkPYQuanPin"].ToString();
                         user.Sex = contact["Sex"].ToString();
                         user.Signature = contact["Signature"].ToString();
-
+                        user.Alias = contact["Alias"].ToString();
                         contact_all.Add(user);
                     }
                 }
@@ -207,7 +210,6 @@ namespace WeChat.NET
                     }
                     _contact_all.Add(o);
                 }
-
                 this.BeginInvoke((Action)(delegate()  //等待结束
                 {
                     _lblWait.Visible = false;
@@ -216,12 +218,21 @@ namespace WeChat.NET
                     wFriendsList1.Items.AddRange(_contact_all.ToArray());  //通讯录
                     wpersonalinfo.FriendUser = _me;
                 }));
-
+                
+                #endregion
 
                 string sync_flag = "";
                 JObject sync_result;
+
+                List<WXUser> userlist = new List<WXUser>();
+                foreach (var item in contact_all)
+                {
+                    userlist.Add((WXUser)item);
+                }
+
                 while (true)
                 {
+                    System.Threading.Thread.Sleep(1000);
                     sync_flag = wxs.WxSyncCheck();  //同步检查
                     if (sync_flag == null)
                     {
@@ -230,112 +241,113 @@ namespace WeChat.NET
                     //这里应该判断 sync_flag中selector的值
                     else //有消息
                     {
-                        sync_result = wxs.WxSync();  //进行同步
-                        if (sync_result != null)
+                        try
                         {
-                            if (sync_result["AddMsgCount"] != null && sync_result["AddMsgCount"].ToString() != "0")
-                            {
-                                foreach (JObject m in sync_result["AddMsgList"])
-                                {
-                                    string from = m["FromUserName"].ToString();
-                                    string to = m["ToUserName"].ToString();
-                                    string content = m["Content"].ToString();
-                                    string type = m["MsgType"].ToString();
-                                    WXMsg msg = new WXMsg();
-                                    msg.From = from;
-                                    msg.Msg = type == "1" ? content : "请在其他设备上查看消息";  //只接受文本消息
-                                    if(type=="49")
-                                    {
-                                        this.BeginInvoke((Action)delegate()
-                                            {
-                                                var username = string.Empty;
-                                                var userEname = string.Empty;
-                                                foreach (Object u in wChatList1.Items)
-                                                {
-                                                    var user = u as WXUser;
-                                                    if (user != null && user.UserName == from && to == _me.UserName)  //接收别人消息
-                                                    {
-                                                        userEname = user.PYQuanPin;
-                                                        username = user.NickName;
-                                                    }
-                                                }
-                                                if (string.IsNullOrWhiteSpace(username))
-                                                {
-                                                    foreach (object o in wFriendsList1.Items)
-                                                    {
-                                                        WXUser friend = o as WXUser;
-                                                        if (friend != null && friend.UserName == from && to == _me.UserName)  //接收别人消息
-                                                        {
-                                                            userEname = friend.PYQuanPin;
-                                                            username = friend.NickName;
-                                                        }
-                                                    }
-                                                }
-                                                new DBService.MongoHelper().AddTopic(DateTime.Now, content, userEname, username);
-                                            });
-                                    }
-                                    
-                                    msg.Readed = false;
-                                    msg.Time = DateTime.Now;
-                                    msg.To = to;
-                                    msg.Type = int.Parse(type);
-
-                                    if (msg.Type == 51)  //屏蔽一些系统数据
-                                    {
-                                        continue;
-                                    }
-                                    this.BeginInvoke((Action)delegate()
-                                    {
-                                        WXUser user; bool exist_latest_contact = false;
-                                        foreach (Object u in wChatList1.Items)
-                                        {
-                                            user = u as WXUser;
-                                            if (user != null)
-                                            {
-                                                if (user.UserName == msg.From && msg.To == _me.UserName)  //接收别人消息
-                                                {
-                                                    wChatList1.Items.Remove(user);
-                                                    wChatList1.Items.Insert(0, user);
-                                                    exist_latest_contact = true;
-                                                    user.ReceiveMsg(msg);
-                                                    break;
-                                                }
-                                                else if (user.UserName == msg.To && msg.From == _me.UserName)  //同步自己在其他设备上发送的消息
-                                                {
-                                                    wChatList1.Items.Remove(user);
-                                                    wChatList1.Items.Insert(0, user);
-                                                    exist_latest_contact = true;
-                                                    user.SendMsg(msg,true);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        if (!exist_latest_contact)
-                                        {
-                                            foreach (object o in wFriendsList1.Items)
-                                            {
-                                                WXUser friend = o as WXUser;
-                                                if (friend != null && friend.UserName == msg.From && msg.To == _me.UserName)
-                                                {
-                                                    wChatList1.Items.Insert(0, friend);
-                                                    friend.ReceiveMsg(msg);
-                                                    break;
-                                                }
-                                                if (friend != null && friend.UserName == msg.To && msg.From == _me.UserName)
-                                                {
-                                                    wChatList1.Items.Insert(0, friend);
-                                                    friend.SendMsg(msg,true);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        wChatList1.Invalidate();
-                                    });
-                                }
-                            }
+                            sync_result = wxs.WxSync();  //进行同步
                         }
-                    }
-                    System.Threading.Thread.Sleep(1000);
+                        catch (Exception)
+                        {
+                            sync_result = null;
+                        }
+                        if (sync_result == null)
+                        {
+                            System.Threading.Thread.Sleep(1000);
+                            continue;
+                        }
+
+                        if (sync_result["AddMsgCount"] != null && sync_result["AddMsgCount"].ToString() != "0")
+                        {
+                            foreach (JObject m in sync_result["AddMsgList"])
+                            {
+                                string from = m["FromUserName"].ToString();
+                                string to = m["ToUserName"].ToString();
+                                string content = m["Content"].ToString();
+                                string type = m["MsgType"].ToString();
+                                WXMsg msg = new WXMsg();
+                                if (content.IndexOf("http://mp.weixin.qq.com/") == -1 || msg.Type == 51)  //屏蔽一些系统数据
+                                {
+                                    continue;
+                                }
+                                msg.From = from;
+                                msg.Msg = type == "1" ? content : "请在其他设备上查看消息";  //只接受文本消息
+                                msg.Readed = false;
+                                msg.Time = DateTime.Now;
+                                msg.To = to;
+                                msg.Type = int.Parse(type);
+
+                                var username = string.Empty;
+                                var userEname = string.Empty;
+                                var Signature = string.Empty;
+                                    var wxuser = userlist.FirstOrDefault(a => a.UserName == msg.From);
+                                    if (wxuser != null)
+                                    {
+                                        userEname = wxuser.Alias;
+                                        username = wxuser.NickName;
+                                        Signature = wxuser.Signature;
+                                    }
+                                 
+                                if (string.IsNullOrWhiteSpace(username))
+                                {
+                                    userEname = "dingxiaoyue";
+                                    username = "订小阅号";
+                                }
+                                new DBService.MongoHelper().AddTopic(DateTime.Now, content, userEname, username, Signature);
+                                System.Threading.Thread.Sleep(1000);
+
+                                #region ReceiveMsg
+
+                                this.BeginInvoke((Action)delegate()
+                                {
+                                    WXUser user; bool exist_latest_contact = false;
+                                    foreach (Object u in wChatList1.Items)
+                                    {
+                                        user = u as WXUser;
+                                        if (user != null)
+                                        {
+                                            if (user.UserName == msg.From && msg.To == _me.UserName)  //接收别人消息
+                                            {
+                                                wChatList1.Items.Remove(user);
+                                                wChatList1.Items.Insert(0, user);
+                                                exist_latest_contact = true;
+                                                user.ReceiveMsg(msg);
+                                                break;
+                                            }
+                                            else if (user.UserName == msg.To && msg.From == _me.UserName)  //同步自己在其他设备上发送的消息
+                                            {
+                                                wChatList1.Items.Remove(user);
+                                                wChatList1.Items.Insert(0, user);
+                                                exist_latest_contact = true;
+                                                user.SendMsg(msg, true);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!exist_latest_contact)
+                                    {
+                                        foreach (object o in wFriendsList1.Items)
+                                        {
+                                            WXUser friend = o as WXUser;
+                                            if (friend != null && friend.UserName == msg.From && msg.To == _me.UserName)
+                                            {
+                                                wChatList1.Items.Insert(0, friend);
+                                                friend.ReceiveMsg(msg);
+                                                break;
+                                            }
+                                            if (friend != null && friend.UserName == msg.To && msg.From == _me.UserName)
+                                            {
+                                                wChatList1.Items.Insert(0, friend);
+                                                friend.SendMsg(msg, true);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    wChatList1.Invalidate();
+                                });
+                                
+                                #endregion
+                            }
+                        }                        
+                    }                    
                 }
 
             })).BeginInvoke(null, null);

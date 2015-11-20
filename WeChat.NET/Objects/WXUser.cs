@@ -12,6 +12,7 @@ namespace WeChat.NET.Objects
     /// </summary>
     public class WXUser
     {
+
         //用户id
         private string _userName;
         public string UserName
@@ -37,6 +38,13 @@ namespace WeChat.NET.Objects
             {
                 _nickName = value;
             }
+        }
+        private string alias;
+
+        public string Alias
+        {
+            get { return alias; }
+            set { alias = value; }
         }
         //头像url
         private string _headImgUrl;
@@ -295,6 +303,8 @@ namespace WeChat.NET.Objects
             }
             return msg;
         }
+
+
     }
     /// <summary>
     /// 表示处理消息发送完成事件的方法
