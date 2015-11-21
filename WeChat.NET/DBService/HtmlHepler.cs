@@ -99,7 +99,7 @@ namespace WeChat.NET.DBService
         {  
             Regex re = new Regex(@"<title>(.*?)</title>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             var matchList = re.Matches(taghtml);
-            return matchList.Count >= 1 ? matchList[0].Value.Replace("<title>", "").Replace("</title>", "") : "";
+            return matchList.Count >= 1 ? matchList[0].Value.Replace("<title>", "").Replace("</title>", "").Replace("&nbsp;","-") : "";
              
         }
 
@@ -127,6 +127,15 @@ namespace WeChat.NET.DBService
                 }
             }
             return "";
+        }
+
+        internal string GetYuanwenUrl(string html)
+        {
+            if (html.IndexOf("var msg_source_url = ''") > 0)
+                return "";
+            Regex re = new Regex(@"var msg_source_url = '(.*?)rd", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var matchList = re.Matches(html);
+            return matchList.Count >= 1 ? matchList[0].Value.Replace("var msg_source_url = '", ""): "";
         }
     }
 }
