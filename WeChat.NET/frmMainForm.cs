@@ -285,8 +285,8 @@ namespace WeChat.NET
                                         username = wxuser.NickName;
                                         Signature = wxuser.Signature;
                                     }
-                                 
-                                if (string.IsNullOrWhiteSpace(username))
+
+                                    if (string.IsNullOrWhiteSpace(userEname))
                                 {
                                     userEname = "dingxiaoyue";
                                     username = "订小阅号";
