@@ -41,3 +41,14 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+#过滤数据库文件、sln解决方案文件、配置文件  
+*.mdb  
+*.ldb  
+*.sln  
+*.config  
+  
+  
+#过滤文件夹Release,obj  
+Release/  
+obj/  

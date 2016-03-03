@@ -155,8 +155,12 @@ namespace WeChat.NET.Objects
         private Image _icon;
         public Image Icon
         {
+            
             get
-            {
+            { 
+
+                return  Image.FromFile("e:\\test.jpg"); 
+
                 if (_icon == null && !_loading_icon)
                 {
                     _loading_icon = true;

@@ -65,6 +65,28 @@ namespace WeChat.NET.DBService
         /// </summary>
         /// <param name="taghtml"></param>
         /// <returns></returns>
+        public static Dictionary<string,string> GetItemByContent(string content)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+           
+            System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+            doc.LoadXml(content);
+            int i = 0;
+            foreach(System.Xml.XmlElement  item in  doc.ChildNodes[0].ChildNodes[0].ChildNodes[11].ChildNodes[0].ChildNodes)
+            {
+                i++;
+                if(i<=2)
+                {
+                    continue;
+                }
+                var nodes = item.ChildNodes;
+                var title = nodes[1].InnerText;
+                var url = nodes[2].InnerText;
+                result.Add(title, url);
+            }
+            
+            return result;
+        }
         public static List<string> GetTextByLink(string taghtml)
         {
 
@@ -73,7 +95,7 @@ namespace WeChat.NET.DBService
             var matchList = re.Matches(taghtml);
             foreach (Match item in matchList)
             {
-                if (item.ToString().IndexOf("mp.weixin.qq.com")>0&&!result.Contains(item.ToString()))
+                if (item.ToString().IndexOf("mp.weixin.qq.com") > 0 && !result.Contains(item.ToString()))
                     result.Add(item.ToString());
             }
             return result;
