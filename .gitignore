@@ -47,8 +47,11 @@ Temporary Items
 *.ldb  
 *.sln  
 *.config  
-  
+WeChat.NET/app.config
+WeChat.NET/Release/
+WeChat.NET/obj/
   
 #过滤文件夹Release,obj  
 Release/  
 obj/  
+TestResults/
