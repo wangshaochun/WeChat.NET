@@ -10,6 +10,7 @@ using WeChat.NET.Controls;
 using WeChat.NET.Objects;
 using WeChat.NET.HTTP;
 using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace WeChat.NET
 {
@@ -36,7 +37,7 @@ namespace WeChat.NET
         private WXUser _me;
 
         private List<Object> _contact_all = new List<object>();
-        private List<object> _contact_latest = new List<object>(); 
+        private List<object> _contact_latest = new List<object>();
         /// <summary>
         /// 构造方法
         /// </summary>
@@ -144,6 +145,7 @@ namespace WeChat.NET
 
                 JObject init_result = wxs.WxInit();  //初始化
 
+
                 List<object> contact_all = new List<object>();
                 if (init_result != null)
                 {
@@ -239,117 +241,82 @@ namespace WeChat.NET
                     {
                         continue;
                     }
-                    //这里应该判断 sync_flag中selector的值
-                    else //有消息
+                    //手机登出
+                    if (sync_flag.Contains("retcode:\"1100\""))
                     {
-                        try
+                        Application.Exit();
+                    }
+                    //你在其他地方登录了 WEB 版微信
+                    if (sync_flag.Contains("retcode:\"1101\""))
+                    {
+                        Application.Exit(); 
+                    }
+                    if (!sync_flag.Contains("retcode:\"0\""))
+                    {
+                        Application.Exit();
+                    }
+                    try
+                    {
+                        sync_result = wxs.WxSync();  //进行同步
+                    }
+                    catch (Exception)
+                    {
+                        sync_result = null;
+                    }
+                    if (sync_result == null)
+                    {
+                        continue;
+                    }
+
+                    if (sync_result["AddMsgCount"] == null || sync_result["AddMsgCount"].ToString() == "0")
+                        continue;
+
+                    foreach (JObject m in sync_result["AddMsgList"])
+                    {
+                        string from = m["FromUserName"].ToString();
+                        string to = m["ToUserName"].ToString();
+                        string content = m["Content"].ToString();
+                        string type = m["MsgType"].ToString();
+                        WXMsg msg = new WXMsg();
+                        if (content.IndexOf("http://mp.weixin.qq.com/") == -1 || msg.Type == 51)  //屏蔽一些系统数据
                         {
-                            sync_result = wxs.WxSync();  //进行同步
-                        }
-                        catch (Exception)
-                        {
-                            sync_result = null;
-                        }
-                        if (sync_result == null)
-                        {
-                            System.Threading.Thread.Sleep(1000);
                             continue;
                         }
+                        msg.From = from;
+                        msg.Msg = type == "1" ? content : "请在其他设备上查看消息";  //只接受文本消息
+                        msg.Readed = false;
+                        msg.Time = DateTime.Now;
+                        msg.To = to;
+                        msg.Type = int.Parse(type);
 
-                        if (sync_result["AddMsgCount"] != null && sync_result["AddMsgCount"].ToString() != "0")
+                        var username = string.Empty;
+                        var userEname = string.Empty;
+                        var Signature = string.Empty;
+                        var wxuser = userlist.FirstOrDefault(a => a.UserName == msg.From);
+                        if (wxuser == null)
+                            continue;
+                        if (string.IsNullOrEmpty(wxuser.Alias))
+                            continue;
+                        userEname = wxuser.Alias;
+                        username = wxuser.NickName;
+                        Signature = wxuser.Signature;
+                        var imgpath = "E:/Github/nodeclub/public/img/" + userEname + ".jpg";
+                        if (!File.Exists(imgpath))
                         {
-                            foreach (JObject m in sync_result["AddMsgList"])
-                            {
-                                string from = m["FromUserName"].ToString();
-                                string to = m["ToUserName"].ToString();
-                                string content = m["Content"].ToString();
-                                string type = m["MsgType"].ToString();
-                                WXMsg msg = new WXMsg();
-                                if (content.IndexOf("http://mp.weixin.qq.com/") == -1 || msg.Type == 51)  //屏蔽一些系统数据
-                                {
-                                    continue;
-                                }
-                                msg.From = from;
-                                msg.Msg = type == "1" ? content : "请在其他设备上查看消息";  //只接受文本消息
-                                msg.Readed = false;
-                                msg.Time = DateTime.Now;
-                                msg.To = to;
-                                msg.Type = int.Parse(type);
+                            Image image = wxs.GetIcon(wxuser.UserName);
+                            image.Save(imgpath);
 
-                                var username = string.Empty;
-                                var userEname = string.Empty;
-                                var Signature = string.Empty;
-                                var wxuser = userlist.FirstOrDefault(a => a.UserName == msg.From);
-                                if (wxuser != null)
-                                {
-                                    userEname = wxuser.Alias;
-                                    username = wxuser.NickName;
-                                    Signature = wxuser.Signature;
-                                }
-
-                                if (string.IsNullOrWhiteSpace(userEname))
-                                {
-                                    userEname = "dingxiaoyue";
-                                    username = "订小阅号";
-                                }
-                                new DBService.MongoHelper().AddTopic(DateTime.Now, content, userEname, username, Signature);
-
-                                //#region ReceiveMsg
-
-                                //this.BeginInvoke((Action)delegate()
-                                //{
-                                //    WXUser user;
-                                //    bool exist_latest_contact = false;
-                                //    foreach (Object u in wChatList1.Items)
-                                //    {
-                                //        user = u as WXUser;
-                                //        if (user != null)
-                                //        {
-                                //            if (user.UserName == msg.From && msg.To == _me.UserName)  //接收别人消息
-                                //            {
-                                //                wChatList1.Items.Remove(user);
-                                //                wChatList1.Items.Insert(0, user);
-                                //                exist_latest_contact = true;
-                                //                user.ReceiveMsg(msg);
-                                //                break;
-                                //            }
-                                //            else if (user.UserName == msg.To && msg.From == _me.UserName)  //同步自己在其他设备上发送的消息
-                                //            {
-                                //                wChatList1.Items.Remove(user);
-                                //                wChatList1.Items.Insert(0, user);
-                                //                exist_latest_contact = true;
-                                //                user.SendMsg(msg, true);
-                                //                break;
-                                //            }
-                                //        }
-                                //    }
-                                //    if (!exist_latest_contact)
-                                //    {
-                                //        foreach (object o in wFriendsList1.Items)
-                                //        {
-                                //            WXUser friend = o as WXUser;
-                                //            if (friend != null && friend.UserName == msg.From && msg.To == _me.UserName)
-                                //            {
-                                //                wChatList1.Items.Insert(0, friend);
-                                //                friend.ReceiveMsg(msg);
-                                //                break;
-                                //            }
-                                //            if (friend != null && friend.UserName == msg.To && msg.From == _me.UserName)
-                                //            {
-                                //                wChatList1.Items.Insert(0, friend);
-                                //                friend.SendMsg(msg, true);
-                                //                break;
-                                //            }
-                                //        }
-                                //    }
-                                //    wChatList1.Invalidate();
-                                //});
-
-                                //#endregion
-                            }
+                            imgpath = "E:/Github/nodeclub/public/qr/" + userEname + ".jpg";
+                            var bytes = BaseService.SendGetRequest("http://open.weixin.qq.com/qr/code/?username=" + userEname);
+                            image = Image.FromStream(new MemoryStream(bytes));
+                            image.Save(imgpath);
                         }
+                        new DBService.MongoHelper().AddTopic(DateTime.Now, content, userEname, username, Signature);
+
                     }
-                } 
+
+
+                }
                 #endregion
 
             })).BeginInvoke(null, null);

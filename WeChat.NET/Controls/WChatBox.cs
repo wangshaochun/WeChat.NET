@@ -50,6 +50,7 @@ namespace WeChat.NET.Controls
                         {
                             using (MemoryStream ms = new MemoryStream())
                             {
+
                                 _friendUser.Icon.Save(ms, ImageFormat.Png);
                                 _friend_base64 = "data:img/jpg;base64," + Convert.ToBase64String(ms.ToArray());
                             }

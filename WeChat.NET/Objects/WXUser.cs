@@ -157,32 +157,38 @@ namespace WeChat.NET.Objects
         {
             
             get
-            { 
-
-                return  Image.FromFile("e:\\test.jpg"); 
-
-                if (_icon == null && !_loading_icon)
+            {
+                return Properties.Resources.male;                
+                try
                 {
-                    _loading_icon = true;
-                    ((Action)(delegate()
+                    if (_icon == null && !_loading_icon)
                     {
-                        WXService wxs = new WXService();
-                        if (_userName.Contains("@@"))  //讨论组
+                        _loading_icon = true;
+                        ((Action)(delegate()
                         {
-                            _icon = wxs.GetHeadImg(_userName);
-                        }
-                        else if (_userName.Contains("@"))  //好友
-                        {
-                            _icon = wxs.GetIcon(_userName);
-                        }
-                        else
-                        {
-                            _icon = wxs.GetIcon(_userName);
-                        }
-                        _loading_icon = false;
-                    })).BeginInvoke(null, null);
+                            WXService wxs = new WXService();
+                            if (_userName.Contains("@@"))  //讨论组
+                            {
+                                _icon = wxs.GetHeadImg(_userName);
+                            }
+                            else if (_userName.Contains("@"))  //好友
+                            {
+                                _icon = wxs.GetIcon(_userName);
+                            }
+                            else
+                            {
+                                _icon = wxs.GetIcon(_userName);
+                            }
+                            _loading_icon = false;
+                        })).BeginInvoke(null, null);
+                    }                    
+                    
+                    return _icon??Image.FromFile("e:\\test.jpg");
                 }
-                return _icon;
+                catch (Exception)
+                {
+                }               
+                
             }
         }
 

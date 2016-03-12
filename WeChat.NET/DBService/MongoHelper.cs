@@ -17,6 +17,7 @@ namespace WeChat.NET.DBService
         MongoServer server = MongoDB.Driver.MongoServer.Create(strconn);
         MongoDatabase database = null;
         HtmlHepler htmlhepler = new HtmlHepler();
+        
         public MongoHelper()
         {  
            database = server.GetDatabase("dyx");
@@ -61,8 +62,10 @@ namespace WeChat.NET.DBService
             doc["receive_at_mail"] = false;
             doc["receive_reply_mail"] = false;
             doc["reply_count"] = 0;
-            doc["score"] = 10;
+            doc["score"] = 10;                     
+            doc["tab"] = getTab(Signature);
             doc["topic_count"] = 0;
+            doc["Signature"] = Signature;
             doc["update_at"] = DateTime.Now;
             user.Insert(doc);
             return true;
@@ -78,13 +81,53 @@ namespace WeChat.NET.DBService
                 .Set("avatar", "/public/img/" + loginname + ".jpg")
                 .Set("pass", "$2a$10$6.XBCgvurt2QHJsBy9poMeBvF0VDJXMpJ9a6w935Ufz0eYk8tojTO")
                 .Set("active", true)             
-                .Set("avatar", "/public/img/" + loginname + ".jpg")
                 .Set("accessToken", Guid.NewGuid().ToString())        
                 .Set("is_block", false)
                 .Set("update_at", DateTime.Now)
                 .Set("Signature",Signature);
             var result = collection.Update(filter, update);
             return true;
+        }
+        private string getTab(string Signature)
+        {
+            var tab = "yc";
+            if (Signature.Contains("电影") || Signature.Contains("音乐") || Signature.Contains("大片"))
+            {
+                tab = "movie";
+            }
+            else if (Signature.Contains("美食") || Signature.Contains("饮食") || Signature.Contains("健身"))
+            {
+                tab = "food";
+            }
+            else if (Signature.Contains("汽车"))
+            {
+                tab = "auto";
+            }
+            else if (Signature.Contains("历史") || Signature.Contains("书"))
+            {
+                tab = "reedbook";
+            }
+            else if (Signature.Contains("编程"))
+            {
+                tab = "code";
+            }
+            else if (Signature.Contains("科技") || Signature.Contains("技术"))
+            {
+                tab = "tech";
+            }           
+            else if (Signature.Contains("搞笑") || Signature.Contains("笑话") || Signature.Contains("娱乐"))
+            {
+                tab = "fun";
+            }
+            else if (Signature.Contains("时尚") || Signature.Contains("生活"))
+            {
+                tab = "life";
+            }
+            else if (Signature.Contains("新闻"))
+            {
+                tab = "news";
+            }
+            return tab;
         }
 
         /// <summary>
@@ -107,10 +150,10 @@ namespace WeChat.NET.DBService
                     {
                         return false;
                     }
-                    //else if (GetTopic(title) != null)
-                    //{
-                    //    return false;
-                    //}
+                    else if (GetTopic(title) != null)
+                    {
+                        return false;
+                    }
                     string body = item.Value;
                     var user = GetUser(userEname);
                     if (user == null)
@@ -146,11 +189,14 @@ namespace WeChat.NET.DBService
                 }
                
             }
-            catch { }
+            catch (Exception ex)
+            {
+                 
+            }
            
             return true;
         }
-         
+
 
     }
 }
