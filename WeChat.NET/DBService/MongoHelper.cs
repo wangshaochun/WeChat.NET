@@ -129,17 +129,29 @@ namespace WeChat.NET.DBService
             }
             return tab;
         }
-
+        /// <summary>
+        /// 时间戳转为C#格式时间
+        /// </summary>
+        /// <param name="timeStamp">Unix时间戳格式</param>
+        /// <returns>C#格式时间</returns>
+        public static DateTime GetTime(string timeStamp)
+        {
+            DateTime dtStart = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
+            long lTime = long.Parse(timeStamp + "0000000");
+            TimeSpan toNow = new TimeSpan(lTime);
+            return dtStart.Add(toNow);
+        }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="title"></param>
         /// <param name="?"></param>
         /// <returns></returns>
-        public bool AddTopic(DateTime create_at, string content, string userEname, string userName, string Signature)
+        public bool AddTopic(string timestamp, string content, string userEname, string userName, string Signature)
         {
             try
             {
+                var create_at = GetTime(timestamp);
                 content = content.Replace("&lt;", "<").Replace("&gt;", ">");
                 var links = HtmlHepler.GetItemByContent(content);
                 foreach(var item in links)

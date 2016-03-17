@@ -13,11 +13,6 @@ D:\周智2011\Githubs\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.csproj.Gene
 D:\周智2011\Githubs\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.exe
 D:\周智2011\Githubs\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.pdb
 D:\周智2011\Githubs\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.Controls.WChatList.resources
-E:\Github\WeChat.NET\WeChat.NET\bin\Debug\WeChat.NET.exe.config
-E:\Github\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.exe
-E:\Github\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.pdb
-E:\Github\WeChat.NET\WeChat.NET\bin\Debug\WeChat.NET.exe
-E:\Github\WeChat.NET\WeChat.NET\bin\Debug\WeChat.NET.pdb
 E:\Github\WeChat.NET\WeChat.NET\bin\Debug\Newtonsoft.Json.dll
 E:\Github\WeChat.NET\WeChat.NET\bin\Debug\WebKitBrowser.dll
 E:\Github\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.Controls.WChatBox.resources
@@ -33,3 +28,8 @@ E:\Github\WeChat.NET\WeChat.NET\bin\Debug\MongoDB.Driver.dll
 E:\Github\WeChat.NET\WeChat.NET\bin\Debug\MongoDB.Bson.xml
 E:\Github\WeChat.NET\WeChat.NET\bin\Debug\MongoDB.Driver.xml
 E:\Github\WeChat.NET\WeChat.NET\obj\x86\Debug\WeChat.NET.csprojResolveAssemblyReference.cache
+E:\Github\WeChat.NET\WeChat.NET\bin\Debug\微信PC版.exe.config
+E:\Github\WeChat.NET\WeChat.NET\bin\Debug\微信PC版.exe
+E:\Github\WeChat.NET\WeChat.NET\bin\Debug\微信PC版.pdb
+E:\Github\WeChat.NET\WeChat.NET\obj\x86\Debug\微信PC版.exe
+E:\Github\WeChat.NET\WeChat.NET\obj\x86\Debug\微信PC版.pdb

@@ -22,7 +22,7 @@ namespace WeChat.NET.DBService.Tests
         public void AddTopicTest()
         {
             var mongo = new MongoHelper();
-            var t = mongo.AddTopic(DateTime.Now,"1234","dingxiaoyue","订小阅号","");
+            var t = mongo.AddTopic("1409876543","1234","dingxiaoyue","订小阅号","");
             Assert.Fail();
         }
     }

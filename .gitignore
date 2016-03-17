@@ -1,4 +1,4 @@
-# Windows image file caches
+﻿# Windows image file caches
 Thumbs.db
 ehthumbs.db
 
@@ -47,7 +47,7 @@ Temporary Items
 *.ldb  
 *.sln  
 *.config  
-WeChat.NET/app.config
+*.NET/app.config
 WeChat.NET/Release/
 WeChat.NET/obj/
   

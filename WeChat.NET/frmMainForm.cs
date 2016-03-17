@@ -235,7 +235,7 @@ namespace WeChat.NET
 
                 while (true)
                 {
-                    System.Threading.Thread.Sleep(1000);
+                    System.Threading.Thread.Sleep(3000);
                     sync_flag = wxs.WxSyncCheck();  //同步检查
                     if (sync_flag == null)
                     {
@@ -280,15 +280,25 @@ namespace WeChat.NET
                         WXMsg msg = new WXMsg();
                         if (content.IndexOf("http://mp.weixin.qq.com/") == -1 || msg.Type == 51)  //屏蔽一些系统数据
                         {
+                            if (content.IndexOf("http://mp.weixin.qq.com/") ==0)
+                            {
+
+                                byte[] bytes = BaseService.SendGetRequest(content);
+                                if (bytes != null)
+                                {
+                                    var oldhtml = Encoding.UTF8.GetString(bytes);
+                                }
+                            }
                             continue;
                         }
+                        
                         msg.From = from;
                         msg.Msg = type == "1" ? content : "请在其他设备上查看消息";  //只接受文本消息
                         msg.Readed = false;
                         msg.Time = DateTime.Now;
                         msg.To = to;
                         msg.Type = int.Parse(type);
-
+                        var createTime = m["CreateTime"].ToString();
                         var username = string.Empty;
                         var userEname = string.Empty;
                         var Signature = string.Empty;
@@ -311,7 +321,7 @@ namespace WeChat.NET
                             image = Image.FromStream(new MemoryStream(bytes));
                             image.Save(imgpath);
                         }
-                        new DBService.MongoHelper().AddTopic(DateTime.Now, content, userEname, username, Signature);
+                        new DBService.MongoHelper().AddTopic(createTime, content, userEname, username, Signature);
 
                     }
 
@@ -324,4 +334,5 @@ namespace WeChat.NET
         #endregion
 
     }
+   
 }
